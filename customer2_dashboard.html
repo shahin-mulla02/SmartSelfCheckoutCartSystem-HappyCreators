@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ChecCart - Item List</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background: #1e2a38;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #e6e8ec;
+      padding: 2rem;
+      user-select: none;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 2rem;
+      background: #253544;
+      border-radius: 12px;
+      padding: 2rem 3rem;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+    }
+    header {
+      margin-bottom: 1rem;
+    }
+    header h1 {
+      font-weight: 700;
+      font-size: 1.8rem;
+      letter-spacing: 1.2px;
+      color: #f1f5f9;
+    }
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0 8px;
+    }
+    thead tr th {
+      text-align: left;
+      font-weight: 600;
+      padding-bottom: 0.8rem;
+      font-size: 1rem;
+      color: #a7b0bb;
+      border-bottom: 1px solid #3a4759;
+    }
+    tbody tr {
+      background: #2f3b4e;
+      border-radius: 8px;
+      box-shadow: inset 0 1px 2px rgb(255 255 255 / 0.05);
+      transition: background-color 0.3s ease;
+    }
+    tbody tr:hover {
+      background: #3b4a67;
+    }
+    tbody tr td {
+      padding: 0.75rem 0.6rem;
+      font-size: 0.94rem;
+      vertical-align: middle;
+      color: #d7dde7;
+      border-left: 5px solid transparent;
+      transition: border-color 0.3s ease;
+    }
+    tbody tr:hover td:first-child {
+      border-left: 5px solid #ffb347;
+    }
+    tbody tr td:first-child {
+      padding-left: 1rem;
+      font-weight: 600;
+    }
+    .price {
+      font-weight: 700;
+      color: #fbbf24;
+      text-align: right;
+      font-feature-settings: "tnum";
+      font-variant-numeric: tabular-nums;
+    }
+    .table-wrapper {
+      max-height: 410px;
+      overflow-y: auto;
+      padding-right: 10px;
+    }
+    .table-wrapper::-webkit-scrollbar {
+      width: 9px;
+    }
+    .table-wrapper::-webkit-scrollbar-track {
+      background: #1e2a38;
+      border-radius: 10px;
+    }
+    .table-wrapper::-webkit-scrollbar-thumb {
+      background: #3b4a67;
+      border-radius: 10px;
+    }
+    .table-wrapper::-webkit-scrollbar-thumb:hover {
+      background: #596a89;
+    }
+    .footer {
+      margin-top: 1.8rem;
+      background: #2f3b4e;
+      padding: 1rem 1.5rem;
+      border-radius: 12px;
+      display: flex;
+      justify-content: flex-end;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: #fbbf24;
+      box-shadow: inset 0 2px 5px rgb(255 191 36 / 0.16);
+    }
+    .payment-form label {
+      color: #a7b0bb;
+      font-size: 0.95rem;
+    }
+    .payment-form input,
+    .payment-form select {
+      width: 100%;
+      padding: 0.6rem;
+      background: #3b4a67;
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      margin-top: 0.2rem;
+    }
+    .payment-form input:focus,
+    .payment-form select:focus {
+      outline: 2px solid #fbbf24;
+    }
+    .payment-form button {
+      width: 100%;
+      margin-top: 1rem;
+      padding: 0.75rem;
+      background: #fbbf24;
+      color: #000;
+      font-weight: 700;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    .payment-form button:hover {
+      background: #facc15;
+    }
+    #chatbot {
+    width: 600px;
+    height: 400px;
+}
+#chatbot-form button {
+    font-size: 0.2rem;  /* bigger button */
+}
+
+    
+  </style>
+</head>
+
+<body>
+<audio id="thankyouSound" src="{{ url_for('static', filename='sounds/thankyou.mp3') }}"></audio>
+
+<main class="container" role="main" aria-label="ChecCart item list">
+  <!-- Left Side -->
+  <div>
+    <header><h1>CheckCart</h1></header>
+    <section class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Item Name</th><th class="price">Item Price</th></tr>
+        </thead>
+        <tbody>
+          {% set ns = namespace(total=0) %}
+          {% for item in scanned_items %}
+          <tr>
+            <td>{{ item.name }}</td>
+            <td class="price">₹{{ "%.2f"|format(item.price * item.quantity) }}</td>
+          </tr>
+          {% set ns.total = ns.total + (item.price * item.quantity) %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+    <div class="footer">Total: ₹{{ "%.2f"|format(ns.total) }}</div>
+  </div>
+
+  <!-- Right Side -->
+  <div class="bg-[#2f3b4e] p-6 rounded-xl shadow-xl h-fit">
+    <h2 class="text-2xl font-bold text-center text-amber-400 mb-4">Payment</h2>
+    <form id="payment-form" class="payment-form" method="POST" action="/payment-success">
+      <div>
+        <label>Payment Method</label>
+        <select name="payment_method" required>
+          <option value="">Select Method</option>
+          <option value="Credit / Debit Card">Credit / Debit Card</option>
+          <option value="UPI">UPI</option>
+          <option value="Cash">Cash</option>
+        </select>
+      </div>
+      <div>
+        <label>UPI ID / Card Number</label>
+        <input type="text" name="upi_or_card" required />
+      </div>
+      <div>
+        <label>CVV / PIN</label>
+        <input type="password" name="cvv" required />
+      </div>
+      <div>
+        <label>Total Amount</label>
+        <input type="text" name="total_amount" value="₹{{ '%.2f' % ns.total }}" />
+      </div>
+      <button type="submit">Pay Now</button>
+    </form>
+  </div>
+</main>
+
+<!-- Download Button -->
+<div style="margin-top: 30px; display: flex; justify-content: center;">
+  <button onclick="downloadReceipt()" style="padding: 0.75rem 1.5rem; background: #22c55e; color: #000; font-weight: bold; border: none; border-radius: 10px; cursor: pointer;">
+    Get Receipt 
+  </button>
+</div>
+
+<!-- Chatbot container -->
+<div id="chatbot" style="position: fixed; bottom: 20px; right: 20px; width: 300px; max-height: 400px; background: #253544; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: flex; flex-direction: column; overflow: hidden; font-family: sans-serif; color: white;">
+  <div id="chatbot-header" style="background: #1e2a38; padding: 10px; font-weight: bold; cursor: pointer;">
+    AI Shopping Assistant
+  </div>
+  <div id="chatbot-messages" style="flex-grow: 1; padding: 10px; overflow-y: auto; font-size: 14px;"></div>
+  <form id="chatbot-form" style="display: flex; border-top: 1px solid #3a4759;">
+    <input type="text" id="chatbot-input" placeholder="Ask me about products..." style="flex-grow: 1; padding: 10px; border: none; background: #1e2a38; color: white;" autocomplete="off" required />
+    <button type="submit" style="background: #fbbf24; border: none; padding: 10px 15px; cursor: pointer;">Send</button>
+  </form>
+</div>
+
+
+<!-- ✅ Script: play full sound before submitting -->
+<script>
+  document.getElementById("payment-form").addEventListener("submit", function(event) {
+    event.preventDefault();
+    const audio = document.getElementById("thankyouSound");
+    const form = this;
+
+    // Reset audio to beginning in case it's partially played
+    audio.currentTime = 0;
+
+    // Play and wait until it finishes
+    audio.play().then(() => {
+      audio.onended = () => {
+        form.submit();
+      };
+
+      // Fallback in case 'onended' doesn't trigger
+      setTimeout(() => {
+        form.submit();
+      }, audio.duration * 1000 + 500); // add buffer
+    }).catch(() => {
+      // If audio can't play, submit anyway
+      form.submit();
+    });
+  });
+
+  
+</script>
+<script>
+  async function fetchScannedItems() {
+    try {
+      const response = await fetch('/get-scanned-items');
+      const items = await response.json();
+
+      const tbody = document.querySelector('tbody');
+      tbody.innerHTML = '';  // clear current rows
+
+      let total = 0;
+
+      items.forEach(item => {
+        const row = document.createElement('tr');
+
+        const nameCell = document.createElement('td');
+        nameCell.textContent = item.name;
+
+        const priceCell = document.createElement('td');
+        priceCell.className = 'price';
+        const itemTotal = item.price * item.quantity;
+        priceCell.textContent = `₹${itemTotal.toFixed(2)}`;
+
+        row.appendChild(nameCell);
+        row.appendChild(priceCell);
+
+        tbody.appendChild(row);
+
+        total += itemTotal;
+      });
+
+      // Update total footer
+      const totalDiv = document.querySelector('.footer');
+      totalDiv.textContent = `Total: ₹${total.toFixed(2)}`;
+
+    } catch (error) {
+      console.error('Error fetching scanned items:', error);
+    }
+  }
+
+  // Fetch items initially when page loads
+  fetchScannedItems();
+
+  // Fetch every 5 seconds
+  setInterval(fetchScannedItems, 5001);
+</script>
+
+<script>
+function downloadReceipt() {
+  fetch("/download-receipt").then(function(response) {
+    if (response.ok) {
+      return response.blob().then(function(blob) {
+        var link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "receipt.txt";
+        link.click();
+
+        // Send email after download
+        return fetch("/email-receipt", { method: "POST" });
+      }).then(function() {
+        alert("Receipt downloaded and emailed!");
+      });
+    } else {
+      alert("Error generating receipt.");
+    }
+  }).catch(function(error) {
+    console.error("Error:", error);
+    alert("Something went wrong.");
+  });
+}
+</script>
+<script>
+  const chatbotForm = document.getElementById('chatbot-form');
+  const chatbotInput = document.getElementById('chatbot-input');
+  const chatbotMessages = document.getElementById('chatbot-messages');
+  const chatbotHeader = document.getElementById('chatbot-header');
+  let chatbotVisible = true;
+
+  // Toggle chatbot visibility on header click
+  chatbotHeader.addEventListener('click', () => {
+    chatbotVisible = !chatbotVisible;
+    chatbotMessages.style.display = chatbotVisible ? 'block' : 'none';
+    chatbotForm.style.display = chatbotVisible ? 'flex' : 'none';
+  });
+
+  function addMessage(text, sender) {
+    const msgDiv = document.createElement('div');
+    msgDiv.style.marginBottom = '8px';
+    msgDiv.style.padding = '8px';
+    msgDiv.style.borderRadius = '6px';
+    if (sender === 'user') {
+      msgDiv.style.backgroundColor = '#4b5563'; // dark gray
+      msgDiv.style.textAlign = 'right';
+    } else {
+      msgDiv.style.backgroundColor = '#fbbf24'; // yellow
+      msgDiv.style.color = '#000';
+      msgDiv.style.textAlign = 'left';
+    }
+    msgDiv.textContent = text;
+    chatbotMessages.appendChild(msgDiv);
+    chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+  }
+
+  chatbotForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const userText = chatbotInput.value.trim();
+    if (!userText) return;
+
+    addMessage(userText, 'user');
+    chatbotInput.value = '';
+
+    try {
+      const response = await fetch('/ask-ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: userText })
+      });
+
+      const data = await response.json();
+      if (data.answer) {
+        addMessage(data.answer, 'bot');
+      } else {
+        addMessage("Sorry, I couldn't find an answer.", 'bot');
+      }
+    } catch (error) {
+      addMessage('Error: Could not connect to server.', 'bot');
+    }
+  });
+</script>
+
+
+
+
+</body>
+</html>
