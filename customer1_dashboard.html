@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Smart Self Checkout</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background: linear-gradient(135deg, #6b46c1, #b794f4);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem;
+    }
+    .container {
+      background-color: #1a202c;
+      border-radius: 1rem;
+      max-width: 900px;
+      width: 100%;
+      display: flex;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+      overflow: hidden;
+    }
+    .left-panel {
+      background: #2d3748;
+      width: 320px;
+      padding: 3rem 2rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      border-top-left-radius: 1rem;
+      border-bottom-left-radius: 1rem;
+    }
+    .left-panel .user-icon {
+      width: 60px;
+      height: 60px;
+      border: 3px solid #3182ce;
+      border-radius: 50%;
+      margin-bottom: 2rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #3182ce;
+      font-size: 2.5rem;
+    }
+    .left-panel input[type="text"],
+    .left-panel input[type="password"] {
+      width: 100%;
+      padding: 0.8rem 1rem;
+      margin-bottom: 1.5rem;
+      border-radius: 0.5rem;
+      border: 1.5px solid #718096;
+      background: transparent;
+      color: white;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.3s ease;
+    }
+    .left-panel input[type="text"]::placeholder,
+    .left-panel input[type="password"]::placeholder {
+      color: #a0aec0;
+    }
+    .left-panel input[type="text"]:focus,
+    .left-panel input[type="password"]:focus {
+      border-color: #3182ce;
+    }
+    .login-btn {
+      width: 100%;
+      background: #d53f8c;
+      color: white;
+      padding: 0.8rem;
+      font-weight: 700;
+      font-size: 1.1rem;
+      border-radius: 0.5rem;
+      border: none;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    .login-btn:hover {
+      background: #b83289;
+    }
+    .remember-container {
+      margin-top: 0.8rem;
+      font-size: 0.875rem;
+      color: #a0aec0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .remember-container label {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+    }
+    .remember-container input[type="checkbox"] {
+      margin-right: 0.5rem;
+      accent-color: #3182ce;
+      cursor: pointer;
+    }
+    .right-panel {
+      flex-grow: 1;
+      background: #2a2e43;
+      border-top-right-radius: 1rem;
+      border-bottom-right-radius: 1rem;
+      padding: 4rem 3rem;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .right-panel h1 {
+      font-size: 3rem;
+      font-weight: 900;
+      margin: 0 0 1rem 0;
+      letter-spacing: -0.025em;
+      user-select: none;
+    }
+    .right-panel::before {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -25%;
+      width: 160%;
+      height: 200%;
+      background: radial-gradient(circle at center, #7137ff 0%, transparent 70%);
+      filter: blur(120px);
+      z-index: 0;
+      pointer-events: none;
+      mix-blend-mode: screen;
+      border-radius: 50%;
+    }
+    .right-panel > * {
+      position: relative;
+      z-index: 1;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" role="main">
+    <section class="left-panel" aria-label="Login panel">
+      <div class="user-icon" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#3182ce" stroke-width="3" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="8" r="4"/><path d="M6 20c0-3 12-3 12 0"></path></svg>
+      </div>
+      <form method="POST" action="/login" autocomplete="off" >
+
+       <input type="text" name="username" placeholder="Username" required aria-label="Username" autocomplete="off" required />
+<input type="password" name="password" placeholder="Password" autocomplete="new-password" />
+
+        <button type="submit" class="login-btn" aria-label="Log in to your account">LOGIN</button>
+        <div class="remember-container">
+          <label>
+            <input type="checkbox" />
+            Remember me
+          </label>
+          <a href="#" tabindex="0" class="text-sm underline hover:text-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-500" aria-label="Forgot your password?">Forgot your password?</a>
+        </div>
+      </form>
+    </section>
+    <section class="right-panel" aria-label="Welcome message">
+      <h1>Welcome to Smart Self Checkout</h1>
+    </section>
+  </div>
+  
+
+
+<script>
+  window.onload = function() {
+    // Clear input values on page load (covers back-button caching)
+    document.querySelector('input[name="username"]').value = "";
+    document.querySelector('input[name="password"]').value = "";
+  };
+
+  function clearInputs() {
+    // Clear inputs before submitting (avoid browser cache)
+    document.querySelector('input[name="username"]').value = "";
+    document.querySelector('input[name="password"]').value = "";
+  }
+</script>
+<audio id="welcomeAudio" src="{{ url_for('static', filename='sounds/welcome.mp3') }}"></audio>
+
+<script>
+  const form = document.querySelector('form');
+  const audio = document.getElementById('welcomeAudio');
+
+  form.addEventListener('submit', function(event) {
+    event.preventDefault();  // stop form from submitting right away
+
+    audio.currentTime = 0;   // start from beginning
+    audio.play().then(() => {
+      // When audio finishes, submit the form
+      audio.onended = () => {
+        form.submit();
+      };
+    }).catch(() => {
+      // If audio can't play, submit form immediately
+      form.submit();
+    });
+  });
+</script>
+
+
+
+
+</body>
+</html>
+
